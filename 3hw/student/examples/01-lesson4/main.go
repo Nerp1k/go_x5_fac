@@ -1,4 +1,6 @@
-package practice
+package main
+
+import "fmt"
 
 type Notifier interface {
 	Send(message string) error
@@ -23,9 +25,6 @@ type PushNotifier struct {
 	DeviceID string
 	Messages []string
 }
-
-var _ Notifier = (*EmailNotifier)(nil)
-var _ Notifier = (*PushNotifier)(nil)
 
 func (n *EmailNotifier) Send(message string) error {
 	n.Messages = append(n.Messages, n.Label(message))
@@ -69,4 +68,23 @@ func Describe(n Notifier) string {
 	default:
 		return "unknown"
 	}
+}
+
+var _ Notifier = (*EmailNotifier)(nil)
+
+var _ Notifier = (*PushNotifier)(nil)
+
+func main() {
+	email := &EmailNotifier{
+		BaseNotifier: BaseNotifier{Channel: "email"},
+		Address:      "student@example.com",
+	}
+	push := &PushNotifier{
+		BaseNotifier: BaseNotifier{Channel: "push"},
+		DeviceID:     "phone-1",
+	}
+	err := Dispatch([]Notifier{email, push}, "Заказ готов")
+	fmt.Println("ошибка:", err)
+	fmt.Println("email:", email.Messages)
+	fmt.Println("push:", push.Messages)
 }
